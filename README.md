@@ -1,4 +1,3 @@
-
 [![npm version](https://badge.fury.io/js/react-native-google-cast.svg)](https://badge.fury.io/js/react-native-google-cast)
 # react-native-google-cast
 
@@ -8,27 +7,45 @@ A library that unifies both android and iOS chromecast sdk
 
 `$ npm install react-native-google-cast --save`
 
-### Installation
+### Mostly automatic installation
 
 `$ react-native link react-native-google-cast`
 
+### Manual installation
+
+
+#### iOS
+
+1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
+2. Go to `node_modules` ➜ `react-native-google-cast` and add `RNGoogleCast.xcodeproj`
+3. In XCode, in the project navigator, select your project. Add `libRNGoogleCast.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
+4. Run your project (`Cmd+R`)<
+
+#### Android
+
+1. Open up `android/app/src/main/java/[...]/MainActivity.java`
+  - Add `import com.reactlibrary.RNGoogleCastPackage;` to the imports at the top of the file
+  - Add `new RNGoogleCastPackage()` to the list returned by the `getPackages()` method
+2. Append the following lines to `android/settings.gradle`:
+  	```
+  	include ':react-native-google-cast'
+  	project(':react-native-google-cast').projectDir = new File(rootProject.projectDir, 	'../node_modules/react-native-google-cast/android')
+  	```
+3. Insert the following lines inside the dependencies block in `android/app/build.gradle`:
+  	```
+      compile project(':react-native-google-cast')
+  	```
 ### iOS Heads Up
   - This library requires Cocoapods to manage Chromecast SDK.
-  - Add `pod 'google-cast-sdk', '2.10.4.1'` to your Podfile. This is the easier way to have the SDK up to date.
+  - Add `pod 'google-cast-sdk'` to your Podfile. This is the easier way to have the SDK up to date.
 
 ### Android Heads Up
-  - This library requires Google Play Services, Media Router and Google Cast dependencies to manage Chromecast SDK.
-  - Add 
-  ``` 
-  compile 'com.google.android.gms:play-services-cast:9.4.0'
-  compile 'com.android.support:mediarouter-v7:23.0.1'
-  ```
-into your your app's `build.gradle` dependencies. `mediarouter`version must match with your `appcompat` version.
+  - This library requires Google Play Services to manage Chromecast SDK.
 
-## Usage
+ ## Usage
 ```js
 // Require the module
-import Chromecast from 'react-native-google-cast';
+import Chromecast, { EVENTS } from 'react-native-google-cast';
 
 // Init Chromecast SDK and starts looking for devices (uses DEFAULT APP ID)
 Chromecast.startScan();
@@ -53,7 +70,7 @@ Chromecast.disconnect();
 
 // Streams the media to the connected chromecast. Time parameter let you choose
 // in which time frame the media should start streaming
-Chromecast.castMedia(MEDIA_URL, MEDIA_TITLE, MEDIA_IMAGE, TIME_IN_SECONDS);
+Chromecast.castMedia({ mediaUrl, title, imageUrl, seconds });
 
 // Move the streaming media to the selected time frame
 Chromecast.seekCast(TIME_IN_SECONDS);
@@ -70,13 +87,13 @@ Chromecast.getStreamPosition();
 Chromecast uses events to let you know when you should start playing with the service, like streaming the media.
 ```js
 // To know if there are chromecasts around
-DeviceEventEmitter.addListener(Chromecast.DEVICE_AVAILABLE, (existance) => console.log(existance.device_available));
+DeviceEventEmitter.addListener(EVENTS.DEVICE_AVAILABLE, (existance) => console.log(existance.device_available));
 
 // To know if the connection attempt was successful
-DeviceEventEmitter.addListener(Chromecast.DEVICE_CONNECTED, () => { /* callback */ });
+DeviceEventEmitter.addListener(EVENTS.DEVICE_CONNECTED, () => { /* callback */ });
 
 // If chromecast started to stream the media succesfully, it will send this event
-DeviceEventEmitter.addListener(Chromecast.MEDIA_LOADED, () => { /* callback */ });
+DeviceEventEmitter.addListener(EVENTS.MEDIA_LOADED, () => { /* callback */ });
 
 ```
 ## Constants
@@ -96,4 +113,4 @@ Remember to use
 to try it!
 
 ## Contribution
-Contributions are welcome !
+Contributions are welcome ! 

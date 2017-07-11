@@ -1,8 +1,7 @@
-#import "GoogleCast.h"
+#import "RNGoogleCast.h"
 #import <React/RCTLog.h>
 #import <React/RCTBridge.h>
 #import <React/RCTEventDispatcher.h>
-
 
 static NSString *const DEVICE_AVAILABLE = @"GoogleCast:DeviceAvailable";
 static NSString *const DEVICE_CONNECTED = @"GoogleCast:DeviceConnected";
@@ -10,7 +9,7 @@ static NSString *const DEVICE_DISCONNECTED = @"GoogleCast:DeviceDisconnected";
 static NSString *const MEDIA_LOADED = @"GoogleCast:MediaLoaded";
 
 
-@implementation GoogleCast
+@implementation RNGoogleCast
 @synthesize bridge = _bridge;
 
 RCT_EXPORT_MODULE();
@@ -223,6 +222,5 @@ RCT_REMAP_METHOD(getStreamPosition,
   [self.bridge.eventDispatcher sendAppEventWithName: eventName
                                                body: params];
 }
-
 
 @end

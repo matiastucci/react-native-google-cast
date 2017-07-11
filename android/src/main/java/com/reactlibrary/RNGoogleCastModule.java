@@ -1,4 +1,4 @@
-package com.googlecast;
+package com.reactlibrary;
 
 import android.support.annotation.Nullable;
 import android.support.v7.media.MediaRouter;
@@ -20,7 +20,6 @@ import com.facebook.react.uimanager.IllegalViewOperationException;
 import com.google.android.gms.cast.ApplicationMetadata;
 import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.MediaInfo;
-import com.google.android.gms.cast.CastMediaControlIntent;
 import com.google.android.libraries.cast.companionlibrary.cast.CastConfiguration;
 import com.google.android.libraries.cast.companionlibrary.cast.VideoCastManager;
 import com.google.android.libraries.cast.companionlibrary.cast.callbacks.VideoCastConsumer;
@@ -35,7 +34,8 @@ import java.util.Map;
 /**
  * Created by Charlie on 5/29/16.
  */
-public class GoogleCastModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
+
+public class RNGoogleCastModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
     private VideoCastManager mCastManager;
     private VideoCastConsumer mCastConsumer;
     Map<String, MediaRouter.RouteInfo> currentDevices = new HashMap<>();
@@ -50,14 +50,14 @@ public class GoogleCastModule extends ReactContextBaseJavaModule implements Life
     private static final String DEVICE_DISCONNECTED = "GoogleCast:DeviceDisconnected";
     private static final String MEDIA_LOADED = "GoogleCast:MediaLoaded";
 
-    public GoogleCastModule(ReactApplicationContext reactContext) {
+    public RNGoogleCastModule(ReactApplicationContext reactContext) {
         super(reactContext);
         getReactApplicationContext().addLifecycleEventListener(this);
     }
 
     @Override
     public String getName() {
-        return "GoogleCast";
+        return "RNGoogleCast";
     }
 
     @Override
@@ -95,10 +95,11 @@ public class GoogleCastModule extends ReactContextBaseJavaModule implements Life
     @ReactMethod
     public void getDevices(Promise promise) {
         WritableArray devicesList = Arguments.createArray();
+        WritableMap singleDevice = Arguments.createMap();
         try {
             Log.e(REACT_CLASS, "devices size " + currentDevices.size());
+
             for (MediaRouter.RouteInfo existingChromecasts : currentDevices.values()) {
-                WritableMap singleDevice = Arguments.createMap();
                 singleDevice.putString("id", existingChromecasts.getId());
                 singleDevice.putString("name", existingChromecasts.getName());
                 devicesList.pushMap(singleDevice);
@@ -209,7 +210,7 @@ public class GoogleCastModule extends ReactContextBaseJavaModule implements Life
 
             Log.e(REACT_CLASS, "Chromecast Initialized by getting instance");
         } else {
-            final CastConfiguration options = GoogleCastService.getCastConfig((appId != null ? appId : CastMediaControlIntent.DEFAULT_MEDIA_RECEIVER_APPLICATION_ID ));
+            final CastConfiguration options = GoogleCastService.getCastConfig(appId);
             UiThreadUtil.runOnUiThread(new Runnable() {
                 public void run() {
                     VideoCastManager.initialize(getCurrentActivity(), options);

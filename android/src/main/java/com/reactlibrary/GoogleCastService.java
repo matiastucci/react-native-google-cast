@@ -1,4 +1,4 @@
-package com.googlecast;
+package com.reactlibrary;
 
 import android.net.Uri;
 
@@ -7,13 +7,13 @@ import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaMetadata;
 import com.google.android.gms.common.images.WebImage;
 import com.google.android.libraries.cast.companionlibrary.cast.CastConfiguration;
+
 import android.support.annotation.Nullable;
 
 /**
- * Created by Charlie on 6/9/16.
+ * * Created by Charlie on 6/9/16.
  */
 public class GoogleCastService {
-    public static final String REACT_CLASS = "GoogleCastModule";
 
     public static MediaInfo getMediaInfo(String filmUrl, String filmTitle, String imageUrl) {
         MediaMetadata mediaMetadata = new MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE);
@@ -27,8 +27,9 @@ public class GoogleCastService {
         return mediaInfo;
     }
 
-    public static CastConfiguration getCastConfig(@Nullable String appId){
-        CastConfiguration options = new CastConfiguration.Builder(appId)
+    public static CastConfiguration getCastConfig(@Nullable String appId) {
+        String actualId = appId != null ? appId : CastMediaControlIntent.DEFAULT_MEDIA_RECEIVER_APPLICATION_ID;
+        CastConfiguration options = new CastConfiguration.Builder(actualId)
                 .enableAutoReconnect()
                 .enableNotification()
                 .addNotificationAction(CastConfiguration.NOTIFICATION_ACTION_SKIP_PREVIOUS, false)
@@ -38,5 +39,8 @@ public class GoogleCastService {
                 .addNotificationAction(CastConfiguration.NOTIFICATION_ACTION_DISCONNECT, true).setForwardStep(10)
                 .build();
         return options;
+
     }
+
 }
+

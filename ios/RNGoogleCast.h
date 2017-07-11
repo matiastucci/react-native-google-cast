@@ -1,7 +1,11 @@
+#if __has_include("RCTBridgeModule.h")
+#import "RCTBridgeModule.h"
+#else
 #import <React/RCTBridgeModule.h>
+#endif
 #import <GoogleCast/GoogleCast.h>
 
-@interface GoogleCast : NSObject <RCTBridgeModule, GCKDeviceScannerListener, GCKDeviceManagerDelegate,GCKMediaControlChannelDelegate>
+@interface RNGoogleCast : NSObject <RCTBridgeModule, GCKDeviceScannerListener, GCKDeviceManagerDelegate,GCKMediaControlChannelDelegate>
 
 @property GCKMediaControlChannel *mediaControlChannel;
 @property(nonatomic, strong) GCKApplicationMetadata *applicationMetadata;
@@ -11,4 +15,5 @@
 @property(nonatomic, strong) GCKMediaInformation* mediaInformation;
 @property(nonatomic, strong) NSMutableDictionary *currentDevices;
 @property(nonatomic, strong) NSString *kReceiverAppID;
+
 @end

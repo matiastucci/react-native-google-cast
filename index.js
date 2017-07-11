@@ -1,40 +1,27 @@
-import { NativeModules } from 'react-native';
+// @flow
 
-const { GoogleCast } = NativeModules;
+import { NativeModules } from 'react-native';
+import type { MediaType } from './GoogleCast.type';
+
+const { RNGoogleCast } = NativeModules;
 
 export default {
-  startScan: function (appId: ?string) {
-	GoogleCast.startScan(appId);
-  },
-  stopScan: function () {
-	GoogleCast.stopScan();
-  },
-  isConnected: function () {
-	return GoogleCast.isConnected();
-  },
-  getDevices: function () {
-	return GoogleCast.getDevices();
-  },
-  connectToDevice: function (deviceId: string) {
-	GoogleCast.connectToDevice(deviceId);
-  },
-  disconnect: function () {
-	GoogleCast.disconnect();
-  },
-  castMedia: function (mediaUrl: string, title: string, imageUrl: string, seconds: number = 0) {
-	GoogleCast.castMedia(mediaUrl, title, imageUrl, seconds);
-  },
-  seekCast: function (seconds: number) {
-	GoogleCast.seekCast(seconds);
-  },
-  togglePauseCast: function () {
-	GoogleCast.togglePauseCast();
-  },
-  getStreamPosition: function () {
-	return GoogleCast.getStreamPosition();
-  },
-  DEVICE_AVAILABLE: GoogleCast.DEVICE_AVAILABLE,
-  DEVICE_CONNECTED: GoogleCast.DEVICE_CONNECTED,
-  DEVICE_DISCONNECTED: GoogleCast.DEVICE_DISCONNECTED,
-  MEDIA_LOADED: GoogleCast.MEDIA_LOADED,
+  startScan: (appId: ?string) => RNGoogleCast.startScan(appId),
+  stopScan: () => RNGoogleCast.stopScan(),
+  isConnected: () => RNGoogleCast.isConnected(),
+  getDevices: () => RNGoogleCast.getDevices(),
+  connectToDevice: (deviceId: string) => RNGoogleCast.connectToDevice(deviceId),
+  disconnect: () => RNGoogleCast.disconnect(),
+  castMedia: ({ mediaUrl, title, imageUrl, seconds = 0 }: MediaType) =>
+    RNGoogleCast.castMedia(mediaUrl, title, imageUrl, seconds),
+  seekCast: (seconds: number) => RNGoogleCast.seekCast(seconds),
+  togglePauseCast: () => RNGoogleCast.togglePauseCast(),
+  getStreamPosition: () => RNGoogleCast.getStreamPosition(),
+};
+
+export const EVENTS = {
+  DEVICE_AVAILABLE: RNGoogleCast.DEVICE_AVAILABLE,
+  DEVICE_CONNECTED: RNGoogleCast.DEVICE_CONNECTED,
+  DEVICE_DISCONNECTED: RNGoogleCast.DEVICE_DISCONNECTED,
+  MEDIA_LOADED: RNGoogleCast.MEDIA_LOADED,
 };
