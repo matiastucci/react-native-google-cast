@@ -190,7 +190,8 @@ public class RNGoogleCastModule extends ReactContextBaseJavaModule implements Li
   
             mApiClient.connect();
 
-            // TODO: run this AFTER connect
+            // run this AFTER connect
+
             try {
                 Cast.CastApi.launchApplication(mApiClient, "C01AB690", false)
                         .setResultCallback(new ResultCallback<Cast.ApplicationConnectionResult>() {
