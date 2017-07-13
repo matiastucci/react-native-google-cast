@@ -9,6 +9,7 @@ export default {
   startScan: (appId: ?string) => RNGoogleCast.startScan(appId),
   stopScan: () => RNGoogleCast.stopScan(),
   isConnected: () => RNGoogleCast.isConnected(),
+  sendMessage: (namespace: string, message: string) => RNGoogleCast.sendMessage(namespace, message),
   getDevices: () => RNGoogleCast.getDevices(),
   connectToDevice: (deviceId: string) => RNGoogleCast.connectToDevice(deviceId),
   disconnect: () => RNGoogleCast.disconnect(),
