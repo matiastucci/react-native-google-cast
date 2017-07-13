@@ -20,6 +20,12 @@ import com.facebook.react.uimanager.IllegalViewOperationException;
 import com.google.android.gms.cast.ApplicationMetadata;
 import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.MediaInfo;
+
+import com.google.android.gms.cast.Cast;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+
 import com.google.android.libraries.cast.companionlibrary.cast.CastConfiguration;
 import com.google.android.libraries.cast.companionlibrary.cast.VideoCastManager;
 import com.google.android.libraries.cast.companionlibrary.cast.callbacks.VideoCastConsumer;
@@ -40,6 +46,9 @@ public class RNGoogleCastModule extends ReactContextBaseJavaModule implements Li
     private VideoCastConsumer mCastConsumer;
     Map<String, MediaRouter.RouteInfo> currentDevices = new HashMap<>();
     private WritableMap deviceAvailableParams;
+
+    private GoogleApiClient mApiClient;
+    private Cast.Listener mCastListener;
 
 
     @VisibleForTesting
@@ -93,6 +102,30 @@ public class RNGoogleCastModule extends ReactContextBaseJavaModule implements Li
     }
 
     @ReactMethod
+    public void sendMessage(String namespace, String message) {
+        Log.e(REACT_CLASS, "namespace " + namespace);
+        Log.e(REACT_CLASS, "message " + message);
+        //Cast.CastApi.sendMessage(mApiClient, namespace, message);
+
+
+        try {
+            Cast.CastApi.sendMessage(mApiClient, namespace, message).setResultCallback(
+                    new ResultCallback<Status>() {
+                        @Override
+                        public void onResult(Status result) {
+                            Log.e(REACT_CLASS, "status message " + result.getStatusMessage());
+                            Log.e(REACT_CLASS, "status message2 " + result.getStatus().toString());
+                            if (!result.isSuccess()) {
+                                Log.e(REACT_CLASS, "Sending message failed");
+                            }
+                        }
+                    });
+        } catch (Exception e) {
+            Log.e(REACT_CLASS, "Exception while sending message", e);
+        }
+    }
+
+    @ReactMethod
     public void getDevices(Promise promise) {
         WritableArray devicesList = Arguments.createArray();
         WritableMap singleDevice = Arguments.createMap();
@@ -139,6 +172,42 @@ public class RNGoogleCastModule extends ReactContextBaseJavaModule implements Li
             Log.e(REACT_CLASS, "devices size " + currentDevices.size());
             MediaRouter.RouteInfo info = currentDevices.get(deviceId);
             CastDevice device = CastDevice.getFromBundle(info.getExtras());
+
+            mCastListener = new Cast.Listener() {
+
+                @Override
+                public void onApplicationDisconnected(int errorCode) {
+                    Log.e(REACT_CLASS, "received deviceName " + errorCode);
+                }
+
+            };
+
+            Cast.CastOptions.Builder apiOptionsBuilder = Cast.CastOptions.builder(device, mCastListener);
+
+            mApiClient = new GoogleApiClient.Builder(getCurrentActivity())
+                    .addApi(Cast.API, apiOptionsBuilder.build())
+                    .build();
+  
+            mApiClient.connect();
+
+            // TODO: run this AFTER connect
+            try {
+                Cast.CastApi.launchApplication(mApiClient, "C01AB690", false)
+                        .setResultCallback(new ResultCallback<Cast.ApplicationConnectionResult>() {
+                            @Override
+                            public void onResult(Cast.ApplicationConnectionResult applicationConnectionResult) {
+                                Status status = applicationConnectionResult.getStatus();
+                                if( status.isSuccess() ) {
+                                    Log.v(REACT_CLASS, "ACA SUCCESS");
+                                }else{
+                                    Log.v(REACT_CLASS, ""+applicationConnectionResult.getStatus().getStatusCode());
+                                }
+                            }
+                        });
+            } catch( Exception e ) {
+                Log.v(REACT_CLASS, "failed:"+e.getMessage());
+            }
+
             mCastManager.onDeviceSelected(device, info);
         } catch (IllegalViewOperationException e) {
             e.printStackTrace();
@@ -199,6 +268,7 @@ public class RNGoogleCastModule extends ReactContextBaseJavaModule implements Li
     @ReactMethod
     public void startScan(@Nullable String appId) {
         Log.e(REACT_CLASS, "start scan Chromecast ");
+
         if (mCastManager != null) {
             mCastManager = VideoCastManager.getInstance();
             UiThreadUtil.runOnUiThread(new Runnable() {
