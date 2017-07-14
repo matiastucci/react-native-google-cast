@@ -26,6 +26,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 
+import android.os.Bundle;
+
 import com.google.android.libraries.cast.companionlibrary.cast.CastConfiguration;
 import com.google.android.libraries.cast.companionlibrary.cast.VideoCastManager;
 import com.google.android.libraries.cast.companionlibrary.cast.callbacks.VideoCastConsumer;
@@ -49,6 +51,7 @@ public class RNGoogleCastModule extends ReactContextBaseJavaModule implements Li
 
     private GoogleApiClient mApiClient;
     private Cast.Listener mCastListener;
+    private ConnectionCallbacks mConnectionCallbacks;
 
 
     @VisibleForTesting
@@ -184,30 +187,14 @@ public class RNGoogleCastModule extends ReactContextBaseJavaModule implements Li
 
             Cast.CastOptions.Builder apiOptionsBuilder = Cast.CastOptions.builder(device, mCastListener);
 
+            mConnectionCallbacks = new ConnectionCallbacks();
+
             mApiClient = new GoogleApiClient.Builder(getCurrentActivity())
                     .addApi(Cast.API, apiOptionsBuilder.build())
+                    .addConnectionCallbacks(mConnectionCallbacks)
                     .build();
-  
+
             mApiClient.connect();
-
-            // run this AFTER connect
-
-            try {
-                Cast.CastApi.launchApplication(mApiClient, "C01AB690", false)
-                        .setResultCallback(new ResultCallback<Cast.ApplicationConnectionResult>() {
-                            @Override
-                            public void onResult(Cast.ApplicationConnectionResult applicationConnectionResult) {
-                                Status status = applicationConnectionResult.getStatus();
-                                if( status.isSuccess() ) {
-                                    Log.v(REACT_CLASS, "ACA SUCCESS");
-                                }else{
-                                    Log.v(REACT_CLASS, ""+applicationConnectionResult.getStatus().getStatusCode());
-                                }
-                            }
-                        });
-            } catch( Exception e ) {
-                Log.v(REACT_CLASS, "failed:"+e.getMessage());
-            }
 
             mCastManager.onDeviceSelected(device, info);
         } catch (IllegalViewOperationException e) {
@@ -364,5 +351,38 @@ public class RNGoogleCastModule extends ReactContextBaseJavaModule implements Li
     @Override
     public void onHostDestroy() {
 
+    }
+
+    /**
+     * Google Play services callbacks
+     */
+    private class ConnectionCallbacks implements GoogleApiClient.ConnectionCallbacks {
+
+        @Override
+        public void onConnected(Bundle connectionHint) {
+            Log.e(REACT_CLASS, "onConnected");
+
+            try {
+                Cast.CastApi.launchApplication(mApiClient, "C01AB690", false)
+                        .setResultCallback(new ResultCallback<Cast.ApplicationConnectionResult>() {
+                            @Override
+                            public void onResult(Cast.ApplicationConnectionResult applicationConnectionResult) {
+                                Status status = applicationConnectionResult.getStatus();
+                                if( status.isSuccess() ) {
+                                    Log.v(REACT_CLASS, "ACA SUCCESS");
+                                }else{
+                                    Log.v(REACT_CLASS, ""+applicationConnectionResult.getStatus().getStatusCode());
+                                }
+                            }
+                        });
+            } catch( Exception e ) {
+                Log.v(REACT_CLASS, "failed:"+e.getMessage());
+            }
+        }
+
+        @Override
+        public void onConnectionSuspended(int cause) {
+            Log.e(REACT_CLASS, "onConnectionSuspended");
+        }
     }
 }
