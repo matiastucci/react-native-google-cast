@@ -52,6 +52,7 @@ public class RNGoogleCastModule extends ReactContextBaseJavaModule implements Li
     private GoogleApiClient mApiClient;
     private Cast.Listener mCastListener;
     private ConnectionCallbacks mConnectionCallbacks;
+    private String appId;
 
 
     @VisibleForTesting
@@ -106,20 +107,13 @@ public class RNGoogleCastModule extends ReactContextBaseJavaModule implements Li
 
     @ReactMethod
     public void sendMessage(String namespace, String message) {
-        Log.e(REACT_CLASS, "namespace " + namespace);
-        Log.e(REACT_CLASS, "message " + message);
-        //Cast.CastApi.sendMessage(mApiClient, namespace, message);
-
-
         try {
             Cast.CastApi.sendMessage(mApiClient, namespace, message).setResultCallback(
                     new ResultCallback<Status>() {
                         @Override
                         public void onResult(Status result) {
-                            Log.e(REACT_CLASS, "status message " + result.getStatusMessage());
-                            Log.e(REACT_CLASS, "status message2 " + result.getStatus().toString());
                             if (!result.isSuccess()) {
-                                Log.e(REACT_CLASS, "Sending message failed");
+                                Log.e(REACT_CLASS, "Sending message failed" + result.getStatus().toString());
                             }
                         }
                     });
@@ -185,16 +179,19 @@ public class RNGoogleCastModule extends ReactContextBaseJavaModule implements Li
 
             };
 
-            Cast.CastOptions.Builder apiOptionsBuilder = Cast.CastOptions.builder(device, mCastListener);
 
-            mConnectionCallbacks = new ConnectionCallbacks();
+            if (appId != null) {
+                Cast.CastOptions.Builder apiOptionsBuilder = Cast.CastOptions.builder(device, mCastListener);
 
-            mApiClient = new GoogleApiClient.Builder(getCurrentActivity())
-                    .addApi(Cast.API, apiOptionsBuilder.build())
-                    .addConnectionCallbacks(mConnectionCallbacks)
-                    .build();
+                mConnectionCallbacks = new ConnectionCallbacks();
 
-            mApiClient.connect();
+                mApiClient = new GoogleApiClient.Builder(getCurrentActivity())
+                        .addApi(Cast.API, apiOptionsBuilder.build())
+                        .addConnectionCallbacks(mConnectionCallbacks)
+                        .build();
+
+                mApiClient.connect();
+            }
 
             mCastManager.onDeviceSelected(device, info);
         } catch (IllegalViewOperationException e) {
@@ -254,8 +251,10 @@ public class RNGoogleCastModule extends ReactContextBaseJavaModule implements Li
 
 
     @ReactMethod
-    public void startScan(@Nullable String appId) {
+    public void startScan(@Nullable String id) {
         Log.e(REACT_CLASS, "start scan Chromecast ");
+
+        appId = id;
 
         if (mCastManager != null) {
             mCastManager = VideoCastManager.getInstance();
@@ -363,20 +362,18 @@ public class RNGoogleCastModule extends ReactContextBaseJavaModule implements Li
             Log.e(REACT_CLASS, "onConnected");
 
             try {
-                Cast.CastApi.launchApplication(mApiClient, "C01AB690", false)
+                Cast.CastApi.launchApplication(mApiClient, appId, false)
                         .setResultCallback(new ResultCallback<Cast.ApplicationConnectionResult>() {
                             @Override
                             public void onResult(Cast.ApplicationConnectionResult applicationConnectionResult) {
                                 Status status = applicationConnectionResult.getStatus();
-                                if( status.isSuccess() ) {
-                                    Log.v(REACT_CLASS, "ACA SUCCESS");
-                                }else{
-                                    Log.v(REACT_CLASS, ""+applicationConnectionResult.getStatus().getStatusCode());
+                                if(!status.isSuccess()) {
+                                    Log.e(REACT_CLASS, "Error launching app:" + applicationConnectionResult.getStatus().getStatusCode());
                                 }
                             }
                         });
             } catch( Exception e ) {
-                Log.v(REACT_CLASS, "failed:"+e.getMessage());
+                Log.v(REACT_CLASS, "failed:" + e.getMessage());
             }
         }
 
