@@ -5,8 +5,9 @@
 #endif
 #import <GoogleCast/GoogleCast.h>
 
-@interface RNGoogleCast : NSObject <RCTBridgeModule, GCKDeviceScannerListener, GCKDeviceManagerDelegate,GCKMediaControlChannelDelegate>
+@interface RNGoogleCast : NSObject <RCTBridgeModule, GCKDeviceScannerListener, GCKDeviceManagerDelegate, GCKMediaControlChannelDelegate>
 
+@property GCKCastChannel *textChannel;
 @property GCKMediaControlChannel *mediaControlChannel;
 @property(nonatomic, strong) GCKApplicationMetadata *applicationMetadata;
 @property(nonatomic, strong) GCKDevice *selectedDevice;

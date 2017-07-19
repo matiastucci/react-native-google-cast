@@ -8,7 +8,6 @@ static NSString *const DEVICE_CONNECTED = @"GoogleCast:DeviceConnected";
 static NSString *const DEVICE_DISCONNECTED = @"GoogleCast:DeviceDisconnected";
 static NSString *const MEDIA_LOADED = @"GoogleCast:MediaLoaded";
 
-
 @implementation RNGoogleCast
 @synthesize bridge = _bridge;
 
@@ -46,6 +45,12 @@ RCT_EXPORT_METHOD(startScan:(NSString *)appID)
     [_deviceScanner setPassiveScan:YES];
 
   });
+}
+
+RCT_EXPORT_METHOD(sendMessage :(NSString *)namespace :(NSString *) message) {
+    GCKError *sendMessageError = [GCKError alloc];
+    [self.textChannel sendTextMessage: message error: &sendMessageError];
+    RCTLogInfo(@"sendMessageError: %@", [GCKError enumDescriptionForCode: sendMessageError.code]);
 }
 
 RCT_EXPORT_METHOD(stopScan)
@@ -187,6 +192,9 @@ RCT_REMAP_METHOD(getStreamPosition,
             sessionID:(NSString *)sessionID
   launchedApplication:(BOOL)launchedApplication {
 
+  self.textChannel = [[GCKCastChannel alloc] initWithNamespace:@"urn:x-cast:com.telemetrytv.chromecast"];
+  [_deviceManager addChannel:self.textChannel];
+
   self.mediaControlChannel = [[GCKMediaControlChannel alloc] init];
   self.mediaControlChannel.delegate = self;
   [_deviceManager addChannel:self.mediaControlChannel];
@@ -204,6 +212,10 @@ RCT_REMAP_METHOD(getStreamPosition,
 - (void) mediaControlChannel:(GCKMediaControlChannel *)mediaControlChannel didCompleteLoadWithSessionID:(NSInteger)sessionID {
   [self emitMessageToRN:MEDIA_LOADED
                        :nil];
+}
+
+- (void) textChannel:(GCKMediaControlChannel *)mediaControlChannel didCompleteLoadWithSessionID:(NSInteger)sessionID {
+  NSLog(@"textChannel didCompleteLoadWithSessionID");
 }
 
 
