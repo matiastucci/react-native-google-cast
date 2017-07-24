@@ -88,7 +88,8 @@ RCT_EXPORT_METHOD(disconnect)
 {
   if(self.deviceManager == nil) return;
   dispatch_async(dispatch_get_main_queue(), ^{
-    [self.deviceManager disconnectWithLeave:YES];
+    [self.deviceManager stopApplication];
+    [self.deviceManager disconnect];
   });
 }
 
